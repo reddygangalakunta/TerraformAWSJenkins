@@ -15,10 +15,11 @@ pipeline {
     }
 
     environment {
-        AWS_DEFAULT_REGION = 'us-east-1'
-        TF_IN_AUTOMATION   = 'true'
-        # Optional: Specify Jenkins AWS credentials ID if configured in Jenkins Credentials Manager
-        # AWS_CREDENTIALS_ID = 'aws-credentials'
+        AWS_DEFAULT_REGION     = 'us-east-1'
+        TF_IN_AUTOMATION       = 'true'
+        # Credentials IDs defined in Jenkins Credentials Manager:
+        AWS_ACCESS_KEY_ID_ID     = 'AWS_ACCESS_KEY_ID'
+        AWS_SECRET_ACCESS_KEY_ID = 'AWS_SECRET_ACCESS_KEY'
     }
 
     options {
@@ -41,7 +42,12 @@ pipeline {
                     echo "======================================================="
                     echo "Initializing Terraform for environment: ${params.ENVIRONMENT}"
                     echo "======================================================="
-                    sh 'terraform init'
+                    withCredentials([
+                        string(credentialsId: env.AWS_ACCESS_KEY_ID_ID, variable: 'AWS_ACCESS_KEY_ID'),
+                        string(credentialsId: env.AWS_SECRET_ACCESS_KEY_ID, variable: 'AWS_SECRET_ACCESS_KEY')
+                    ]) {
+                        sh 'terraform init'
+                    }
                 }
             }
         }
@@ -62,10 +68,15 @@ pipeline {
                     echo "Action:      ${params.ACTION}"
                     echo "======================================================="
                     
-                    if (params.ACTION == 'destroy') {
-                        sh "terraform plan -destroy -var-file=environments/${params.ENVIRONMENT}.tfvars -out=tfplan"
-                    } else {
-                        sh "terraform plan -var-file=environments/${params.ENVIRONMENT}.tfvars -out=tfplan"
+                    withCredentials([
+                        string(credentialsId: env.AWS_ACCESS_KEY_ID_ID, variable: 'AWS_ACCESS_KEY_ID'),
+                        string(credentialsId: env.AWS_SECRET_ACCESS_KEY_ID, variable: 'AWS_SECRET_ACCESS_KEY')
+                    ]) {
+                        if (params.ACTION == 'destroy') {
+                            sh "terraform plan -destroy -var-file=environments/${params.ENVIRONMENT}.tfvars -out=tfplan"
+                        } else {
+                            sh "terraform plan -var-file=environments/${params.ENVIRONMENT}.tfvars -out=tfplan"
+                        }
                     }
                 }
             }
@@ -107,7 +118,12 @@ pipeline {
                     echo "======================================================="
                     echo "Executing Terraform ${params.ACTION.toUpperCase()} on '${params.ENVIRONMENT}'..."
                     echo "======================================================="
-                    sh 'terraform apply -input=false tfplan'
+                    withCredentials([
+                        string(credentialsId: env.AWS_ACCESS_KEY_ID_ID, variable: 'AWS_ACCESS_KEY_ID'),
+                        string(credentialsId: env.AWS_SECRET_ACCESS_KEY_ID, variable: 'AWS_SECRET_ACCESS_KEY')
+                    ]) {
+                        sh 'terraform apply -input=false tfplan'
+                    }
                 }
             }
         }
