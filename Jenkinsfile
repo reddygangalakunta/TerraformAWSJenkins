@@ -15,9 +15,9 @@ pipeline {
     }
 
     environment {
-        AWS_DEFAULT_REGION     = 'us-east-1'
-        TF_IN_AUTOMATION       = 'true'
-        # Credentials IDs defined in Jenkins Credentials Manager:
+        AWS_DEFAULT_REGION       = 'us-east-1'
+        TF_IN_AUTOMATION         = 'true'
+        // Credentials IDs defined in Jenkins Credentials Manager:
         AWS_ACCESS_KEY_ID_ID     = 'AWS_ACCESS_KEY_ID'
         AWS_SECRET_ACCESS_KEY_ID = 'AWS_SECRET_ACCESS_KEY'
     }
